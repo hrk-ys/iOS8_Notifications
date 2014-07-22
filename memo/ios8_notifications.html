@@ -1,0 +1,406 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>What’s New in iOS Notifications</title>
+
+</head>
+<body>
+<h1>What’s New in iOS Notifications</h1>
+
+<p>WWDC 2014のVideo Sessionを見てみる。
+https://developer.apple.com/videos/wwdc/2014/</p>
+
+<h2>User Notification iOS7の説明</h2>
+
+<h3>User Notificationsとは</h3>
+
+<ul>
+<li>Alert表示</li>
+<li>Notification Centerに通知</li>
+<li>スクリーンOFFの時に表示</li>
+</ul>
+
+
+<h3>User Notificationの実行</h3>
+
+<ul>
+<li>アプリからLocal Notificationを使う</li>
+<li>APNsからRemote Notificationを使う</li>
+<li>APNsからcontent-available: 1を指定してappを介して通信する</li>
+</ul>
+
+
+<h2>User Notifications iOS8</h2>
+
+<p>今回紹介するのは大きく以下の4つ</p>
+
+<ul>
+<li>User Notifications</li>
+<li>Notification Actions</li>
+<li>Remote Notification</li>
+<li>Location Notification</li>
+</ul>
+
+
+<h2>User Notifications</h2>
+
+<h3>登録方法</h3>
+
+<p>UIRemoteNotificationTypeと同じようなイメージ</p>
+
+<p>categoryという概念が追加されているが後ほど</p>
+
+<pre><code>UIUserNotificationType types = UIUserNotificationTypeBadge |
+  UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+
+UIUserNotificationSettings *mySettings = [UIUserNotificationSettings
+  settingsForTypes:types categories:nil];
+[[UIApplication sharedApplication] registerUserNotificationSettings:mySettings];
+</code></pre>
+
+<h3>ユーザパーミッション</h3>
+
+<p>UIApplicationDelegateにCallbackメソッドがある</p>
+
+<p>許可しない場合は、allowedTypes == UIUserNotificationTypeNoneとなる</p>
+
+<pre><code> - (void)application:(UIApplication *)application
+     didRegisterUserNotificationSettings:
+    (UIUserNotificationSettings *)notificationSettings {
+
+    // user has allowed receiving user notifications of the following types
+    UIUserNotificationType allowedTypes = [notificationSettings types];
+}
+</code></pre>
+
+<h3>許可されたタイプの取得</h3>
+
+<pre><code>- (void)getReadyForNotification {
+  // ...
+  // check to make sure we still need to show notification
+  UIUserNotificationSettings *currentSettings = [[UIApplication
+   sharedApplication] currentUserNotificationSettings];
+  [self checkSettings:currentSettings];
+}
+</code></pre>
+
+<h2>Notification Action</h2>
+
+<p>iOS7ではそれぞれのNotificationに対して、スワイプで削除、タップで起動しかできなかった</p>
+
+<p>iOS8ではスワイプして、複数のボタンを準備してアクションさせる事が可能</p>
+
+<p><img src="image1.png" alt="img1" />
+<img src="image2.png" alt="img2" />
+<img src="image3.png" alt="img3" /></p>
+
+<h3>Actionの作成方法</h3>
+
+<p>ボタンのタイトルやバックグランド、ロック解除前でも可能かどうかを定義する</p>
+
+<pre><code>UIMutableUserNotificationAction *acceptAction =
+  [[UIMutableUserNotificationAction alloc] init];
+
+acceptAction.identifier = @"ACCEPT_IDENTIFIER";
+
+acceptAction.title = @"Accept";
+
+// Given seconds, not minutes, to run in the background
+// UIUserNotificationActivationModeForegroundを指定すると、選択時にアプリを起動する
+acceptAction.activationMode = UIUserNotificationActivationModeBackground;
+
+acceptAction.destructive = NO;
+
+// If YES requires passcode, but does not unlock the device
+acceptAction.authenticationRequired = NO;
+</code></pre>
+
+<h3>Categoryの作成方法</h3>
+
+<p>複数のアクションを登録したカテゴリを作成する</p>
+
+<p>例えば：
+ - メールカテゴリだと、返信アクション、アーカイブアクションなど登録
+ - 友達申請用のカテゴリだと、承認アクション、保留アクションなど登録</p>
+
+<pre><code>UIMutableUserNotificationCategory *inviteCategory =
+  [[UIMutableUserNotificationCategory alloc] init];
+
+inviteCategory.identifier = @"INVITE_CATEGORY";
+
+[inviteCategory setActions:@[acceptAction, maybeAction, declineAction]
+  forContext:UIUserNotificationActionContextDefault];
+</code></pre>
+
+<p>UIUserNotificationActionContextDefault ボタンのサイズが普通
+UIUserNotificationActionContextMinimal ボタンのサイズが若干小さめ</p>
+
+<h3>定義したUserNotificationの登録</h3>
+
+<p>UIApplicationにActionを登録したCategoryを設定したSettingを登録する</p>
+
+<pre><code>NSSet *categories = [NSSet setWithObjects:inviteCategory, alarmCategory, ...
+
+UIUserNotificationSettings *settings =
+  [UIUserNotificationSettings settingsForTypes:types categories:categories];
+
+[[UIApplication sharedApplication]
+  registerUserNotificationSettings:settings];
+</code></pre>
+
+<h3>カテゴリを指定したNotificationの発行</h3>
+
+<h4>Remote Notification</h4>
+
+<p>apsにcategoryを追加して飛ばす</p>
+
+<pre><code>{
+  "aps" : {
+    "alert" : "You’re invited!",
+    "category" : "INVITE_CATEGORY",
+  }
+}
+</code></pre>
+
+<h4>Local Notification</h4>
+
+<pre><code>UILocalNotification *notification = [[UILocalNotification alloc] init];
+
+...
+notification.category = @"INVITE_CATEGORY";
+
+[[UIApplication sharedApplication] scheduleLocalNotification:notification];
+</code></pre>
+
+<h2>Handling Notification Action</h2>
+
+<p>iOS7ではアプリが起動して無い場合</p>
+
+<pre><code>￼￼application:didFinishLaunchingWithOptions:
+￼application:didReceiveRemoteNotification:fetchCompletionHandler:
+</code></pre>
+
+<p>アプリが起動している場合は</p>
+
+<pre><code>￼application:didReceiveLocalNotification:
+￼application:didReceiveRemoteNotification:
+￼application:didReceiveRemoteNotification:fetchCompletionHandler:
+</code></pre>
+
+<p>iOS8では</p>
+
+<pre><code>// Push Notificationの場合
+- (void)application:(UIApplication *)application
+  handleActionWithIdentifier:(NSString *)identifier
+     forRemoteNotification:(NSDictionary *)notification
+         completionHandler:(void (^)())completionHandler {
+    if ([identifier isEqualToString:@"ACCEPT_IDENTIFIER"]) {
+      [self handleAcceptActionWithNotification:notification];
+    }
+    // Must be called when finished
+    completionHandler();
+}
+
+// Local Notificationの場合
+- (void)application:(UIApplication *)application
+   handleActionWithIdentifier:(NSString *)identifier
+  forLocalNotification:(UILocalNotification *)notification
+   completionHandler:(void(^)())completionHandler {
+
+}
+</code></pre>
+
+<p>を使う。identifireにActionで選択されたIDが入ってくる。</p>
+
+<h1>Remote Notifications</h1>
+
+<p>User</p>
+
+<ul>
+<li>Requires call to registerUserNotificationSettings:</li>
+</ul>
+
+
+<p>Silent</p>
+
+<ul>
+<li>Info.plist UIBackgroundModes array contains remote-notification</li>
+</ul>
+
+
+<h2>登録方法</h2>
+
+<p>×[myApp registerForRemoteNotificationTypes:someTypes];
+[myApp registerForRemoteNotifications];
+[myApp registerUserNotificationSettings:mySettings];</p>
+
+<h1>Location Notifications</h1>
+
+<p>一定エリアに入ったタイミング、出るタイミング</p>
+
+<p>一定エリアに入ったら毎回通知するか、一回だけ通知するか選択可能</p>
+
+<p>以前もあったけどシンプルに実装できるようになったイメージ</p>
+
+<h2>使い方</h2>
+
+<pre><code>UILocalNotification * locNotification;
+
+locNotification.regionTriggersOnce = YES;
+
+locNotification.region = [[CLCircularRegion alloc] initWithCenter:LOC_COORDINATE
+[[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+</code></pre>
+</body>
+</html>
